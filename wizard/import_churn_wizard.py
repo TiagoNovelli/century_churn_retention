@@ -303,27 +303,26 @@ class ImportChurnWizard(models.TransientModel):
 
         # ── Mensagem de resultado ──────────────────────────────────────────
         msg_parts = [
-            f'✅ <b>{criados}</b> clientes criados',
-            f'🔄 <b>{atualizados}</b> atualizados',
-            f'⏭️ <b>{ignorados}</b> ignorados',
+            f'✅ {criados} clientes criados',
+            f'🔄 {atualizados} atualizados',
+            f'⏭️ {ignorados} ignorados',
         ]
         if erros:
-            msg_parts.append(f'⚠️ <b>{len(erros)}</b> erros:<br/>' + '<br/>'.join(erros[:20]))
+            msg_parts.append(f'⚠️ {len(erros)} erros: ' + ' | '.join(erros[:5]))
 
+        # Notificação simples no chatter do wizard — compatível com Odoo 18
+        tipo = 'success' if not erros else 'warning'
+
+        # Redireciona para o pipeline filtrado pelo lote
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Importação concluída'),
-                'message': '<br/>'.join(msg_parts),
-                'type': 'success' if not erros else 'warning',
-                'sticky': True,
-                'next': {
-                    'type': 'ir.actions.act_window',
-                    'res_model': 'century.retention.lead',
-                    'view_mode': 'kanban,list,form',
-                    'domain': [('import_batch', '=', self.import_batch)],
-                    'name': f'Importação: {self.import_batch}',
-                }
-            }
+            'type': 'ir.actions.act_window',
+            'name': f'Importação: {self.import_batch}',
+            'res_model': 'century.retention.lead',
+            'view_mode': 'kanban,list,form',
+            'domain': [('import_batch', '=', self.import_batch)],
+            'context': {
+                'search_default_em_processo': 1,
+                'import_result_message': ' | '.join(msg_parts),
+            },
+            'target': 'current',
         }
