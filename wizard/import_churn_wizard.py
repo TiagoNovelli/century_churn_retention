@@ -18,7 +18,6 @@ class ImportChurnWizard(models.TransientModel):
     file_data = fields.Binary(string="Arquivo Excel (.xlsx)", required=True)
     file_name = fields.Char(string="Nome do Arquivo")
 
-    team_id = fields.Many2one("crm.team", string="Equipe de Vendas")
     date_deadline = fields.Date(
         string="Prazo para Contato",
         default=lambda self: date.today().replace(day=28),
@@ -274,10 +273,6 @@ class ImportChurnWizard(models.TransientModel):
                 prob_raw = float(get_val(row, "prob_churn", 0) or 0)
                 prob_churn = prob_raw * 100 if prob_raw <= 1.0 else prob_raw
 
-                inferred_team_id = self.team_id.id if self.team_id else False
-                if not inferred_team_id and partner.user_id and "sale_team_id" in partner.user_id._fields:
-                    inferred_team_id = partner.user_id.sale_team_id.id
-
                 vals = {
                     "partner_id": partner.id,
                     "curva_abc": curva if curva in ("A", "B", "C") else False,
@@ -286,7 +281,6 @@ class ImportChurnWizard(models.TransientModel):
                     "n_pedidos": int(get_val(row, "n_pedidos", 0) or 0),
                     "recencia": int(get_val(row, "recencia", 0) or 0),
                     "var_receita": float(get_val(row, "var_receita", 0) or 0),
-                    "team_id": inferred_team_id,
                     "date_deadline": self.date_deadline,
                     "import_batch": self.import_batch,
                     "stage_id": stage_inicial.id,

@@ -23,7 +23,6 @@
 
                     <group string="Configurações">
                         <group>
-                            <field name="team_id"/>
                             <field name="date_deadline"/>
                         </group>
                         <group>

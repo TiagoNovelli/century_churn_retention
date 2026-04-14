@@ -62,7 +62,9 @@ class RetentionLead(models.Model):
     team_id = fields.Many2one(
         'crm.team',
         string='Equipe de Vendas',
-        tracking=True,
+        compute='_compute_sales_team',
+        store=True,
+        readonly=True,
     )
     team_leader_id = fields.Many2one(
         'res.users',
@@ -141,6 +143,21 @@ class RetentionLead(models.Model):
                 rec.nivel_risco = 'medio'
             else:
                 rec.nivel_risco = 'baixo'
+
+    @api.depends('representante_id')
+    def _compute_sales_team(self):
+        TeamMember = self.env['crm.team.member']
+        for rec in self:
+            rec.team_id = False
+            if not rec.representante_id:
+                continue
+            member = TeamMember.search(
+                [('user_id', '=', rec.representante_id.id)],
+                order='id asc',
+                limit=1,
+            )
+            if member:
+                rec.team_id = member.crm_team_id
 
     def _default_stage(self):
         return self.env['century.retention.stage'].search(
