@@ -326,6 +326,7 @@ class ImportChurnWizard(models.TransientModel):
         action["context"] = {
             "search_default_em_processo": 1,
             "search_default_curva_a_risco_alto": 1,
+            "search_default_meus": 1,
             "default_import_batch": self.import_batch,
         }
 

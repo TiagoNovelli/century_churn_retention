@@ -25,12 +25,7 @@
         <field name="name">Retencao: Acesso do Vendedor</field>
         <field name="model_id" ref="model_century_retention_lead"/>
         <field name="groups" eval="[(4, ref('group_retention_user'))]"/>
-        <field name="domain_force">
-            ['|',
-                ('representante_id', '=', user.id),
-                ('representante_id', '=', False)
-            ]
-        </field>
+        <field name="domain_force">[('representante_id', '=', user.id)]</field>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
@@ -41,7 +36,7 @@
         <field name="name">Retencao: Acesso do Lider de Vendas</field>
         <field name="model_id" ref="model_century_retention_lead"/>
         <field name="groups" eval="[(4, ref('group_retention_coordinator'))]"/>
-        <field name="domain_force">[('team_leader_id', '=', user.id)]</field>
+        <field name="domain_force">[('team_id.user_id', '=', user.id)]</field>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
