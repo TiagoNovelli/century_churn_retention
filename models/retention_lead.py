@@ -145,7 +145,7 @@ class RetentionLead(models.Model):
         )
 
     @api.model
-    def _read_group_stage_ids(self, stages, domain, order):
+    def _read_group_stage_ids(self, stages, domain, order=None):
         return self.env['century.retention.stage'].search([], order='sequence asc')
 
     # ──────────────────────────────────────────────────────────────────────────
