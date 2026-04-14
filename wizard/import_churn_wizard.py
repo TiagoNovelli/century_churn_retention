@@ -80,6 +80,45 @@ class ImportChurnWizard(models.TransientModel):
             return ""
         return "".join(filter(str.isdigit, str(value)))
 
+    def _find_partner(self, cnpj_val="", nome_val=""):
+        Partner = self.env["res.partner"]
+        partner = Partner.browse()
+
+        candidates = []
+        if cnpj_val:
+            candidates.append(cnpj_val)
+            if len(cnpj_val) > 14:
+                candidates.append(cnpj_val[-14:])
+            candidates.append(cnpj_val.lstrip("0"))
+
+        seen = set()
+        normalized_candidates = []
+        for candidate in candidates:
+            if candidate and candidate not in seen:
+                normalized_candidates.append(candidate)
+                seen.add(candidate)
+
+        for candidate in normalized_candidates:
+            partner = Partner.search([("vat", "ilike", candidate)], limit=1)
+            if partner:
+                return partner.commercial_partner_id
+
+        if normalized_candidates:
+            shortlist = Partner.search([("vat", "!=", False)])
+            for record in shortlist:
+                vat_digits = self._clean_cnpj(record.vat)
+                if vat_digits in normalized_candidates:
+                    return record.commercial_partner_id
+                if len(vat_digits) > 14 and vat_digits[-14:] in normalized_candidates:
+                    return record.commercial_partner_id
+
+        if nome_val:
+            partner = Partner.search([("name", "ilike", nome_val)], limit=1)
+            if partner:
+                return partner.commercial_partner_id
+
+        return Partner.browse()
+
     def _parse_file(self):
         if not openpyxl:
             raise UserError(_("Biblioteca openpyxl nao instalada."))
@@ -151,13 +190,7 @@ class ImportChurnWizard(models.TransientModel):
             )
             prob = row[col_map["prob_churn"]] if col_map.get("prob_churn") is not None else 0
 
-            partner = False
-            if cnpj_val:
-                partner = self.env["res.partner"].search([("vat", "like", cnpj_val)], limit=1)
-            if not partner and nome_val:
-                partner = self.env["res.partner"].search(
-                    [("name", "ilike", str(nome_val))], limit=1
-                )
+            partner = self._find_partner(cnpj_val, str(nome_val or "").strip())
 
             status = "OK" if partner else "Nao encontrado"
             if self.only_ab and curva not in ("A", "B"):
@@ -230,15 +263,7 @@ class ImportChurnWizard(models.TransientModel):
                 cnpj_val = self._clean_cnpj(get_val(row, "cnpj", ""))
                 nome_val = str(get_val(row, "cliente", "") or "").strip()
 
-                partner = False
-                if cnpj_val:
-                    partner = self.env["res.partner"].search(
-                        [("vat", "like", cnpj_val), ("is_company", "=", True)], limit=1
-                    )
-                if not partner and nome_val:
-                    partner = self.env["res.partner"].search(
-                        [("name", "ilike", nome_val), ("is_company", "=", True)], limit=1
-                    )
+                partner = self._find_partner(cnpj_val, nome_val)
 
                 if not partner:
                     erros.append(
