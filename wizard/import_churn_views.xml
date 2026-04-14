@@ -16,8 +16,7 @@
                     </div>
 
                     <group string="Arquivo">
-                        <field name="file_data" widget="binary" filename="file_name"
-                               attrs="{'required': True}"/>
+                        <field name="file_data" widget="binary" filename="file_name"/>
                         <field name="file_name" invisible="1"/>
                         <field name="import_batch"/>
                     </group>

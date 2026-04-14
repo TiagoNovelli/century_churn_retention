@@ -8,8 +8,7 @@
         <field name="name">century.retention.lead.kanban</field>
         <field name="model">century.retention.lead</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="stage_id" class="o_kanban_small_column"
-                    on_create="quick_create" quick_create_view="century_churn_retention.view_retention_quick_create">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column">
                 <field name="partner_id"/>
                 <field name="curva_abc"/>
                 <field name="prob_churn"/>
