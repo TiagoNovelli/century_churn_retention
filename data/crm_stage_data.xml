@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="stage_identificado" model="century.retention.stage">
+        <field name="name">🔴 Identificado</field>
+        <field name="sequence">1</field>
+        <field name="color">1</field>
+        <field name="description">Cliente importado pelo modelo preditivo. Ainda sem contato.</field>
+    </record>
+
+    <record id="stage_contato" model="century.retention.stage">
+        <field name="name">📞 Contato Realizado</field>
+        <field name="sequence">2</field>
+        <field name="color">3</field>
+        <field name="description">Primeiro contato feito. Diagnóstico em andamento.</field>
+    </record>
+
+    <record id="stage_tratamento" model="century.retention.stage">
+        <field name="name">⚙️ Em Tratamento</field>
+        <field name="sequence">3</field>
+        <field name="color">4</field>
+        <field name="description">Ação de retenção em andamento (troca de showroom, proposta comercial, etc).</field>
+    </record>
+
+    <record id="stage_monitoramento" model="century.retention.stage">
+        <field name="name">👁️ Monitoramento</field>
+        <field name="sequence">4</field>
+        <field name="color">5</field>
+        <field name="description">Ação executada. Aguardando retorno de compra.</field>
+    </record>
+
+    <record id="stage_recuperado" model="century.retention.stage">
+        <field name="name">✅ Recuperado</field>
+        <field name="sequence">5</field>
+        <field name="is_won">True</field>
+        <field name="color">10</field>
+        <field name="fold">True</field>
+        <field name="description">Cliente voltou a comprar. Retenção bem-sucedida.</field>
+    </record>
+
+    <record id="stage_churned" model="century.retention.stage">
+        <field name="name">❌ Churned</field>
+        <field name="sequence">6</field>
+        <field name="is_lost">True</field>
+        <field name="color">1</field>
+        <field name="fold">True</field>
+        <field name="description">Cliente confirmado como churned. Registrar motivo para análise.</field>
+    </record>
+
+</odoo>

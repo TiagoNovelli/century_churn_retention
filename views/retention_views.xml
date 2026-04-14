@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- KANBAN                                                            -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_retention_kanban" model="ir.ui.view">
+        <field name="name">century.retention.lead.kanban</field>
+        <field name="model">century.retention.lead</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column"
+                    on_create="quick_create" quick_create_view="century_churn_retention.view_retention_quick_create">
+                <field name="partner_id"/>
+                <field name="curva_abc"/>
+                <field name="prob_churn"/>
+                <field name="nivel_risco"/>
+                <field name="receita_total"/>
+                <field name="representante_id"/>
+                <field name="kanban_state"/>
+                <field name="priority"/>
+                <field name="stage_id"/>
+                <field name="resultado"/>
+                <progressbar field="kanban_state"
+                    colors='{"normal": "200", "done": "success", "blocked": "danger"}'/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <!-- Cabeçalho: nome + prioridade -->
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <strong class="o_kanban_record_title">
+                                    <field name="partner_id"/>
+                                </strong>
+                                <field name="priority" widget="priority"/>
+                            </div>
+
+                            <!-- Curva + Risco -->
+                            <div class="d-flex gap-2 mb-1">
+                                <span t-if="record.curva_abc.value"
+                                      class="badge"
+                                      t-attf-class="badge #{record.curva_abc.value === 'A' ? 'text-bg-danger' : record.curva_abc.value === 'B' ? 'text-bg-warning' : 'text-bg-secondary'}">
+                                    Curva <t t-esc="record.curva_abc.value"/>
+                                </span>
+                                <span t-if="record.nivel_risco.value"
+                                      class="badge text-bg-light">
+                                    <t t-esc="record.nivel_risco.value"/>
+                                </span>
+                            </div>
+
+                            <!-- Probabilidade de churn -->
+                            <div class="mb-1">
+                                <small class="text-muted">Prob. Churn: </small>
+                                <strong t-attf-class="#{record.prob_churn.value >= 70 ? 'text-danger' : record.prob_churn.value >= 40 ? 'text-warning' : 'text-success'}">
+                                    <t t-esc="record.prob_churn.value.toFixed(1)"/>%
+                                </strong>
+                            </div>
+
+                            <!-- Receita -->
+                            <div class="mb-1">
+                                <small class="text-muted">Receita: </small>
+                                <field name="receita_total" widget="monetary"/>
+                            </div>
+
+                            <!-- Rodapé: representante + estado -->
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <field name="representante_id" widget="many2one_avatar_user"/>
+                                <field name="kanban_state" widget="kanban_state_selection"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- LIST                                                              -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_retention_list" model="ir.ui.view">
+        <field name="name">century.retention.lead.list</field>
+        <field name="model">century.retention.lead</field>
+        <field name="arch" type="xml">
+            <list string="Clientes em Risco" decoration-danger="nivel_risco == 'alto'"
+                  decoration-warning="nivel_risco == 'medio'"
+                  default_order="prob_churn desc">
+                <field name="priority" widget="priority" optional="show"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="cnpj" optional="show"/>
+                <field name="curva_abc" optional="show"/>
+                <field name="prob_churn" string="Prob. Churn %" optional="show"/>
+                <field name="nivel_risco" widget="badge"
+                       decoration-danger="nivel_risco == 'alto'"
+                       decoration-warning="nivel_risco == 'medio'"
+                       decoration-success="nivel_risco == 'baixo'"/>
+                <field name="receita_total" optional="show"/>
+                <field name="stage_id" optional="show"/>
+                <field name="representante_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="coordenador_id" optional="show"/>
+                <field name="date_deadline" optional="show"/>
+                <field name="resultado" widget="badge"
+                       decoration-success="resultado == 'recuperado'"
+                       decoration-danger="resultado == 'churned'"
+                       decoration-info="resultado == 'em_processo'"
+                       optional="show"/>
+                <field name="import_batch" optional="hide"/>
+                <field name="kanban_state" widget="kanban_state_selection" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- FORM                                                              -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_retention_form" model="ir.ui.view">
+        <field name="name">century.retention.lead.form</field>
+        <field name="model">century.retention.lead</field>
+        <field name="arch" type="xml">
+            <form string="Cliente em Risco">
+                <!-- Barra de status -->
+                <header>
+                    <field name="stage_id" widget="statusbar"
+                           statusbar_visible="stage_id"/>
+                    <button name="action_marcar_contato" type="object"
+                            string="Registrar Contato" class="btn-secondary"
+                            invisible="date_contact != False"/>
+                    <button name="action_recuperado" type="object"
+                            string="✅ Marcar como Recuperado" class="btn-success"
+                            invisible="resultado == 'recuperado'"/>
+                    <button name="action_churned" type="object"
+                            string="❌ Confirmar Churn" class="btn-danger"
+                            invisible="resultado == 'churned'"/>
+                    <field name="kanban_state" widget="kanban_state_selection"/>
+                </header>
+
+                <sheet>
+                    <!-- Alerta de risco alto -->
+                    <div class="alert alert-danger" role="alert"
+                         invisible="nivel_risco != 'alto'">
+                        <strong>⚠️ Alto Risco de Churn:</strong>
+                        Probabilidade de <field name="prob_churn" readonly="1"/>%.
+                        Contato urgente recomendado.
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="partner_id" string="Cliente"/>
+                        <h1>
+                            <field name="partner_id" placeholder="Selecione o cliente..."
+                                   options="{'no_create': True}"/>
+                        </h1>
+                        <field name="priority" widget="priority"/>
+                    </div>
+
+                    <group>
+                        <group string="Dados do Modelo Preditivo">
+                            <field name="prob_churn" string="Probabilidade de Churn (%)"
+                                   widget="percentpie"/>
+                            <field name="nivel_risco" widget="badge"
+                                   decoration-danger="nivel_risco == 'alto'"
+                                   decoration-warning="nivel_risco == 'medio'"
+                                   decoration-success="nivel_risco == 'baixo'"/>
+                            <field name="curva_abc"/>
+                            <field name="receita_total"/>
+                            <field name="n_pedidos"/>
+                            <field name="recencia"/>
+                            <field name="var_receita" string="Variação Receita (%)"/>
+                        </group>
+                        <group string="Responsáveis">
+                            <field name="representante_id" widget="many2one_avatar_user"/>
+                            <field name="coordenador_id" widget="many2one_avatar_user"/>
+                            <field name="team_id"/>
+                            <field name="cnpj"/>
+                            <field name="import_batch"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Datas">
+                            <field name="date_import"/>
+                            <field name="date_contact"/>
+                            <field name="date_deadline"/>
+                        </group>
+                        <group string="Resultado">
+                            <field name="resultado" widget="radio"/>
+                            <field name="motivo_churn"
+                                   invisible="resultado != 'churned'"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Observações" name="observacoes">
+                            <field name="observacoes" placeholder="Registre aqui o diagnóstico, ações tomadas e observações relevantes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <!-- Chatter -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- SEARCH                                                            -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_retention_search" model="ir.ui.view">
+        <field name="name">century.retention.lead.search</field>
+        <field name="model">century.retention.lead</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Clientes em Risco">
+                <field name="partner_id" string="Cliente"/>
+                <field name="cnpj" string="CNPJ"/>
+                <field name="representante_id"/>
+                <field name="coordenador_id"/>
+                <field name="import_batch"/>
+
+                <filter string="🔴 Risco Alto" name="risco_alto"
+                        domain="[('nivel_risco', '=', 'alto')]"/>
+                <filter string="🟡 Risco Médio" name="risco_medio"
+                        domain="[('nivel_risco', '=', 'medio')]"/>
+                <filter string="Curva A" name="curva_a"
+                        domain="[('curva_abc', '=', 'A')]"/>
+                <filter string="Curva B" name="curva_b"
+                        domain="[('curva_abc', '=', 'B')]"/>
+                <separator/>
+                <filter string="Em Processo" name="em_processo"
+                        domain="[('resultado', '=', 'em_processo')]"/>
+                <filter string="✅ Recuperados" name="recuperados"
+                        domain="[('resultado', '=', 'recuperado')]"/>
+                <filter string="❌ Churned" name="churned"
+                        domain="[('resultado', '=', 'churned')]"/>
+                <separator/>
+                <filter string="Meus Clientes" name="meus"
+                        domain="[('representante_id', '=', uid)]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estágio" name="group_stage"
+                            context="{'group_by': 'stage_id'}"/>
+                    <filter string="Curva ABC" name="group_curva"
+                            context="{'group_by': 'curva_abc'}"/>
+                    <filter string="Nível de Risco" name="group_risco"
+                            context="{'group_by': 'nivel_risco'}"/>
+                    <filter string="Representante" name="group_rep"
+                            context="{'group_by': 'representante_id'}"/>
+                    <filter string="Lote de Importação" name="group_batch"
+                            context="{'group_by': 'import_batch'}"/>
+                    <filter string="Resultado" name="group_resultado"
+                            context="{'group_by': 'resultado'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- GRAPH                                                             -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_retention_graph" model="ir.ui.view">
+        <field name="name">century.retention.lead.graph</field>
+        <field name="model">century.retention.lead</field>
+        <field name="arch" type="xml">
+            <graph string="Análise de Churn" type="bar">
+                <field name="curva_abc" type="row"/>
+                <field name="resultado" type="col"/>
+                <field name="receita_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- PIVOT                                                             -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_retention_pivot" model="ir.ui.view">
+        <field name="name">century.retention.lead.pivot</field>
+        <field name="model">century.retention.lead</field>
+        <field name="arch" type="xml">
+            <pivot string="Análise de Churn">
+                <field name="curva_abc" type="row"/>
+                <field name="nivel_risco" type="col"/>
+                <field name="receita_total" type="measure"/>
+                <field name="prob_churn" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- ESTÁGIOS — LIST                                                   -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_retention_stage_list" model="ir.ui.view">
+        <field name="name">century.retention.stage.list</field>
+        <field name="model">century.retention.stage</field>
+        <field name="arch" type="xml">
+            <list string="Estágios" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="is_won"/>
+                <field name="is_lost"/>
+                <field name="fold"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- ACTIONS                                                           -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <record id="action_retention_leads" model="ir.actions.act_window">
+        <field name="name">Pipeline de Retenção</field>
+        <field name="res_model">century.retention.lead</field>
+        <field name="view_mode">kanban,list,form,graph,pivot</field>
+        <field name="context">{'search_default_em_processo': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Nenhum cliente em risco no pipeline.
+            </p>
+            <p>
+                Importe uma lista de churn gerada pelo modelo preditivo
+                para começar o trabalho de retenção.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_retention_stages" model="ir.actions.act_window">
+        <field name="name">Estágios do Pipeline</field>
+        <field name="res_model">century.retention.stage</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

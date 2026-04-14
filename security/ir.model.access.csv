@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_retention_lead_user,century.retention.lead user,model_century_retention_lead,group_retention_user,1,1,1,0
+access_retention_lead_coordinator,century.retention.lead coordinator,model_century_retention_lead,group_retention_coordinator,1,1,1,1
+access_retention_lead_manager,century.retention.lead manager,model_century_retention_lead,group_retention_manager,1,1,1,1
+access_retention_stage_user,century.retention.stage user,model_century_retention_stage,group_retention_user,1,0,0,0
+access_retention_stage_manager,century.retention.stage manager,model_century_retention_manager,model_century_retention_stage,1,1,1,1
+access_import_churn_wizard,import churn wizard,model_century_import_churn_wizard,group_retention_manager,1,1,1,1

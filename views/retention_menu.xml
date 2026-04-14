@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menu raiz -->
+    <menuitem id="menu_retention_root"
+              name="Retenção"
+              sequence="25"
+              web_icon="century_churn_retention,static/description/icon.png"
+              groups="century_churn_retention.group_retention_user"/>
+
+    <!-- Pipeline -->
+    <menuitem id="menu_retention_pipeline"
+              name="Pipeline de Retenção"
+              parent="menu_retention_root"
+              action="action_retention_leads"
+              sequence="1"
+              groups="century_churn_retention.group_retention_user"/>
+
+    <!-- Importar (só gerente) -->
+    <menuitem id="menu_retention_import"
+              name="Importar Lista de Churn"
+              parent="menu_retention_root"
+              action="action_import_churn_wizard"
+              sequence="2"
+              groups="century_churn_retention.group_retention_manager"/>
+
+    <!-- Configuração (só gerente) -->
+    <menuitem id="menu_retention_config"
+              name="Configuração"
+              parent="menu_retention_root"
+              sequence="10"
+              groups="century_churn_retention.group_retention_manager"/>
+
+    <menuitem id="menu_retention_stages"
+              name="Estágios"
+              parent="menu_retention_config"
+              action="action_retention_stages"
+              sequence="1"
+              groups="century_churn_retention.group_retention_manager"/>
+
+</odoo>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_import_churn_wizard" model="ir.ui.view">
+        <field name="name">century.import.churn.wizard.form</field>
+        <field name="model">century.import.churn.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar Lista de Churn">
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        <strong>📋 Formato esperado do Excel:</strong>
+                        O arquivo deve ter colunas: <code>cliente</code>, <code>cnpj</code>,
+                        <code>curva</code>, <code>prob_churn</code>, <code>risco</code>,
+                        <code>receita_total</code>, <code>n_pedidos</code>, <code>recencia</code>.
+                        Este é o arquivo exportado pelo notebook de previsão de churn.
+                    </div>
+
+                    <group string="Arquivo">
+                        <field name="file_data" widget="binary" filename="file_name"
+                               attrs="{'required': True}"/>
+                        <field name="file_name" invisible="1"/>
+                        <field name="import_batch"/>
+                    </group>
+
+                    <group string="Configurações">
+                        <group>
+                            <field name="coordenador_id"/>
+                            <field name="team_id"/>
+                            <field name="date_deadline"/>
+                        </group>
+                        <group>
+                            <field name="duplicates_action" widget="radio"/>
+                            <field name="only_ab"/>
+                        </group>
+                    </group>
+
+                    <!-- Preview -->
+                    <group string="Preview (primeiras 10 linhas)" invisible="file_data == False">
+                        <div class="col-12">
+                            <field name="total_rows" readonly="1"/>
+                            <field name="valid_rows" readonly="1"/>
+                            <field name="invalid_rows" readonly="1"/>
+                        </div>
+                        <div class="col-12">
+                            <field name="preview_html" readonly="1" widget="html"/>
+                        </div>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button name="action_import" type="object"
+                            string="🚀 Importar Clientes" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_import_churn_wizard" model="ir.actions.act_window">
+        <field name="name">Importar Lista de Churn</field>
+        <field name="res_model">century.import.churn.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
