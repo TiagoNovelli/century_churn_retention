@@ -18,12 +18,6 @@ class ImportChurnWizard(models.TransientModel):
     file_data = fields.Binary(string="Arquivo Excel (.xlsx)", required=True)
     file_name = fields.Char(string="Nome do Arquivo")
 
-    coordenador_id = fields.Many2one(
-        "res.users",
-        string="Coordenador Responsavel",
-        required=True,
-        default=lambda self: self.env.user,
-    )
     team_id = fields.Many2one("crm.team", string="Equipe de Vendas")
     date_deadline = fields.Date(
         string="Prazo para Contato",
@@ -280,6 +274,10 @@ class ImportChurnWizard(models.TransientModel):
                 prob_raw = float(get_val(row, "prob_churn", 0) or 0)
                 prob_churn = prob_raw * 100 if prob_raw <= 1.0 else prob_raw
 
+                inferred_team_id = self.team_id.id if self.team_id else False
+                if not inferred_team_id and partner.user_id and "sale_team_id" in partner.user_id._fields:
+                    inferred_team_id = partner.user_id.sale_team_id.id
+
                 vals = {
                     "partner_id": partner.id,
                     "curva_abc": curva if curva in ("A", "B", "C") else False,
@@ -288,16 +286,12 @@ class ImportChurnWizard(models.TransientModel):
                     "n_pedidos": int(get_val(row, "n_pedidos", 0) or 0),
                     "recencia": int(get_val(row, "recencia", 0) or 0),
                     "var_receita": float(get_val(row, "var_receita", 0) or 0),
-                    "coordenador_id": self.coordenador_id.id,
-                    "team_id": self.team_id.id if self.team_id else False,
+                    "team_id": inferred_team_id,
                     "date_deadline": self.date_deadline,
                     "import_batch": self.import_batch,
                     "stage_id": stage_inicial.id,
                     "resultado": "em_processo",
                 }
-
-                if partner.user_id:
-                    vals["representante_id"] = partner.user_id.id
 
                 existing = self.env["century.retention.lead"].search(
                     [("partner_id", "=", partner.id), ("resultado", "=", "em_processo")],
@@ -331,7 +325,7 @@ class ImportChurnWizard(models.TransientModel):
         action["domain"] = [("import_batch", "=", self.import_batch)]
         action["context"] = {
             "search_default_em_processo": 1,
-            "search_default_curva_a": 1,
+            "search_default_curva_a_risco_alto": 1,
             "default_import_batch": self.import_batch,
         }
 

@@ -94,7 +94,7 @@
                 <field name="receita_total" optional="show"/>
                 <field name="stage_id" optional="show"/>
                 <field name="representante_id" widget="many2one_avatar_user" optional="show"/>
-                <field name="coordenador_id" optional="show"/>
+                <field name="team_leader_id" widget="many2one_avatar_user" optional="show"/>
                 <field name="date_deadline" optional="show"/>
                 <field name="resultado" widget="badge"
                        decoration-success="resultado == 'recuperado'"
@@ -164,8 +164,8 @@
                             <field name="var_receita" string="Variação Receita (%)"/>
                         </group>
                         <group string="Responsáveis">
-                            <field name="representante_id" widget="many2one_avatar_user"/>
-                            <field name="coordenador_id" widget="many2one_avatar_user"/>
+                            <field name="representante_id" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="team_leader_id" widget="many2one_avatar_user" readonly="1"/>
                             <field name="team_id"/>
                             <field name="cnpj"/>
                             <field name="import_batch"/>
@@ -206,16 +206,24 @@
         <field name="model">century.retention.lead</field>
         <field name="arch" type="xml">
             <search string="Buscar Clientes em Risco">
+                <searchpanel>
+                    <field name="curva_abc" string="Curva"/>
+                    <field name="nivel_risco" string="Nivel de Risco"/>
+                    <field name="resultado" string="Resultado"/>
+                    <field name="team_id" string="Equipe"/>
+                </searchpanel>
                 <field name="partner_id" string="Cliente"/>
                 <field name="cnpj" string="CNPJ"/>
                 <field name="representante_id"/>
-                <field name="coordenador_id"/>
+                <field name="team_leader_id"/>
                 <field name="import_batch"/>
 
                 <filter string="🔴 Risco Alto" name="risco_alto"
                         domain="[('nivel_risco', '=', 'alto')]"/>
                 <filter string="🟡 Risco Médio" name="risco_medio"
                         domain="[('nivel_risco', '=', 'medio')]"/>
+                <filter string="Curva A + Risco Alto" name="curva_a_risco_alto"
+                        domain="[('curva_abc', '=', 'A'), ('nivel_risco', '=', 'alto')]"/>
                 <filter string="Curva A" name="curva_a"
                         domain="[('curva_abc', '=', 'A')]"/>
                 <filter string="Curva B" name="curva_b"
@@ -238,8 +246,10 @@
                             context="{'group_by': 'curva_abc'}"/>
                     <filter string="Nível de Risco" name="group_risco"
                             context="{'group_by': 'nivel_risco'}"/>
-                    <filter string="Representante" name="group_rep"
+                    <filter string="Vendedor" name="group_rep"
                             context="{'group_by': 'representante_id'}"/>
+                    <filter string="Lider de Vendas" name="group_leader"
+                            context="{'group_by': 'team_leader_id'}"/>
                     <filter string="Lote de Importação" name="group_batch"
                             context="{'group_by': 'import_batch'}"/>
                     <filter string="Resultado" name="group_resultado"
@@ -305,7 +315,7 @@
         <field name="name">Pipeline de Retenção</field>
         <field name="res_model">century.retention.lead</field>
         <field name="view_mode">kanban,list,form,graph,pivot</field>
-        <field name="context">{'search_default_em_processo': 1, 'search_default_curva_a': 1}</field>
+        <field name="context">{'search_default_em_processo': 1, 'search_default_curva_a_risco_alto': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Nenhum cliente em risco no pipeline.

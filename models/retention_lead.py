@@ -54,19 +54,22 @@ class RetentionLead(models.Model):
     # ── Responsáveis ────────────────────────────────────────────────────────
     representante_id = fields.Many2one(
         'res.users',
-        string='Representante',
-        tracking=True,
-        default=lambda self: self.env.user,
-    )
-    coordenador_id = fields.Many2one(
-        'res.users',
-        string='Coordenador',
-        tracking=True,
+        string='Vendedor',
+        related='partner_id.user_id',
+        store=True,
+        readonly=True,
     )
     team_id = fields.Many2one(
         'crm.team',
         string='Equipe de Vendas',
         tracking=True,
+    )
+    team_leader_id = fields.Many2one(
+        'res.users',
+        string='Lider de Vendas',
+        related='team_id.user_id',
+        store=True,
+        readonly=True,
     )
 
     # ── Pipeline ────────────────────────────────────────────────────────────

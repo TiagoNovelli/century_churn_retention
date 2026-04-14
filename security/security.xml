@@ -1,32 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ── Grupos ──────────────────────────────────────────────────────── -->
     <record id="group_retention_user" model="res.groups">
-        <field name="name">Retenção / Representante</field>
+        <field name="name">Retencao / Vendedor</field>
         <field name="category_id" ref="base.module_category_sales_sales"/>
-        <field name="comment">Vê e edita apenas seus próprios clientes em risco.</field>
+        <field name="comment">Ve e edita apenas seus proprios clientes em risco.</field>
     </record>
 
     <record id="group_retention_coordinator" model="res.groups">
-        <field name="name">Retenção / Coordenador</field>
+        <field name="name">Retencao / Lider de Vendas</field>
         <field name="category_id" ref="base.module_category_sales_sales"/>
         <field name="implied_ids" eval="[(4, ref('group_retention_user'))]"/>
-        <field name="comment">Vê e edita todos os clientes em risco.</field>
+        <field name="comment">Ve e edita os clientes em risco da sua equipe.</field>
     </record>
 
     <record id="group_retention_manager" model="res.groups">
-        <field name="name">Retenção / Gerente</field>
+        <field name="name">Retencao / Gerente</field>
         <field name="category_id" ref="base.module_category_sales_sales"/>
         <field name="implied_ids" eval="[(4, ref('group_retention_coordinator'))]"/>
-        <field name="comment">Acesso total incluindo importação e configuração.</field>
+        <field name="comment">Acesso total incluindo importacao e configuracao.</field>
     </record>
 
-    <!-- ── Record Rules ────────────────────────────────────────────────── -->
-
-    <!-- Representante: vê apenas registros onde é o responsável -->
     <record id="rule_retention_representante" model="ir.rule">
-        <field name="name">Retenção: Acesso do Representante</field>
+        <field name="name">Retencao: Acesso do Vendedor</field>
         <field name="model_id" ref="model_century_retention_lead"/>
         <field name="groups" eval="[(4, ref('group_retention_user'))]"/>
         <field name="domain_force">
@@ -35,20 +31,19 @@
                 ('representante_id', '=', False)
             ]
         </field>
-        <field name="perm_read"   eval="True"/>
-        <field name="perm_write"  eval="True"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
         <field name="perm_unlink" eval="False"/>
     </record>
 
-    <!-- Coordenador: vê tudo -->
     <record id="rule_retention_coordinator" model="ir.rule">
-        <field name="name">Retenção: Acesso do Coordenador</field>
+        <field name="name">Retencao: Acesso do Lider de Vendas</field>
         <field name="model_id" ref="model_century_retention_lead"/>
         <field name="groups" eval="[(4, ref('group_retention_coordinator'))]"/>
-        <field name="domain_force">[(1, '=', 1)]</field>
-        <field name="perm_read"   eval="True"/>
-        <field name="perm_write"  eval="True"/>
+        <field name="domain_force">[('team_leader_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
         <field name="perm_unlink" eval="True"/>
     </record>
