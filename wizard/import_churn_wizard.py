@@ -319,9 +319,11 @@ class ImportChurnWizard(models.TransientModel):
             'name': f'Importação: {self.import_batch}',
             'res_model': 'century.retention.lead',
             'view_mode': 'kanban,list,form',
+            'views': [(False, 'kanban'), (False, 'list'), (False, 'form')],
             'domain': [('import_batch', '=', self.import_batch)],
             'context': {
                 'search_default_em_processo': 1,
+                'search_default_curva_a': 1,
                 'import_result_message': ' | '.join(msg_parts),
             },
             'target': 'current',

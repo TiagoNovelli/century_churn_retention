@@ -304,7 +304,7 @@
         <field name="name">Pipeline de Retenção</field>
         <field name="res_model">century.retention.lead</field>
         <field name="view_mode">kanban,list,form,graph,pivot</field>
-        <field name="context">{'search_default_em_processo': 1}</field>
+        <field name="context">{'search_default_em_processo': 1, 'search_default_curva_a': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Nenhum cliente em risco no pipeline.
