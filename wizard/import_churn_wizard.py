@@ -113,7 +113,12 @@ class ImportChurnWizard(models.TransientModel):
                     return record.commercial_partner_id
 
         if nome_val:
-            partner = Partner.search([("name", "ilike", nome_val)], limit=1)
+            partner = Partner.search(
+                [("name", "=ilike", nome_val)],
+                limit=1,
+            )
+            if not partner:
+                partner = Partner.search([("name", "ilike", nome_val)], limit=1)
             if partner:
                 return partner.commercial_partner_id
 

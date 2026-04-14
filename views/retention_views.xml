@@ -48,8 +48,9 @@
                             <!-- Probabilidade de churn -->
                             <div class="mb-1">
                                 <small class="text-muted">Prob. Churn: </small>
-                                <strong t-attf-class="#{record.prob_churn.value >= 70 ? 'text-danger' : record.prob_churn.value >= 40 ? 'text-warning' : 'text-success'}">
-                                    <t t-esc="record.prob_churn.value.toFixed(1)"/>%
+                                <t t-set="prob_value" t-value="record.prob_churn.raw_value or 0"/>
+                                <strong t-attf-class="#{prob_value >= 70 ? 'text-danger' : prob_value >= 40 ? 'text-warning' : 'text-success'}">
+                                    <t t-esc="prob_value"/>%
                                 </strong>
                             </div>
 
